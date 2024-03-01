@@ -124,7 +124,8 @@ for product in PLAID_PRODUCTS:
 
 # We store the access_token in memory - in production, store it in a secure
 # persistent data store.
-access_token = "access-development-4226d0fc-0a1c-4649-998f-6383a38320d1"
+access_token = os.getenv("FIRST_DIRECT_ACCESS_TOKEN")
+monzo_access_token = os.getenv("MONZO_ACCESS_TOKEN")
 # The payment_id is only relevant for the UK Payment Initiation product.
 # We store the payment_id in memory - in production, store it in a secure
 # persistent data store.
