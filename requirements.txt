@@ -33,3 +33,4 @@ werkzeug==3.0.1
 gunicorn
 # MYSQl part
 mysqlclient
+psycopg[c]
