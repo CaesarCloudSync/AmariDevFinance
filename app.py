@@ -141,6 +141,10 @@ transfer_id = None
 
 item_id = None
 
+@app.route('/', methods=['GET'])
+@cross_origin()
+def home():
+    return "hello amari finance pots is working."
 
 @app.route('/api/info', methods=['GET'])
 @cross_origin()
