@@ -10,7 +10,7 @@ terraform {
 
 provider "google" {
   # Replace `PROJECT_ID` with your project
-  project = "blacktechdivision"
+  project = "caesaraiapis"
 }
 
 # Enables the Cloud Run API
@@ -27,7 +27,7 @@ resource "google_cloud_run_service" "run_service" {
   template {
     spec {
       containers {
-        image = "palondomus/amarifinancepots:25"
+        image = "palondomus/amarifinancepots:1"
       }
     }
   }

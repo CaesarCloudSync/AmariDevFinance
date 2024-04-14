@@ -46,6 +46,9 @@ from plaid.model.transfer_authorization_user_in_request import TransferAuthoriza
 from plaid.model.ach_class import ACHClass
 from plaid.model.transfer_create_idempotency_key import TransferCreateIdempotencyKey
 from plaid.model.transfer_user_address_in_request import TransferUserAddressInRequest
+from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
+from plaid.model.link_token_create_request import LinkTokenCreateRequest
+from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
 from plaid.api import plaid_api
 from flask_cors import CORS,cross_origin
 from CaesarSQLDB.caesar_create_tables import CaesarCreateTables
@@ -61,13 +64,14 @@ app = Flask(__name__)
 CORS(app)
 
 # Fill in your Plaid API keys - https://dashboard.plaid.com/account/keys
-PLAID_CLIENT_ID = os.getenv('PLAID_CLIENT_ID') # Uses Google Cloud Environment Variables
+PLAID_CLIENT_ID =os.getenv('PLAID_CLIENT_ID') # Uses Google Cloud Environment Variables
 PLAID_SECRET = os.getenv('PLAID_SECRET') # Uses Google Cloud Environment Variables
 # Use 'sandbox' to test with Plaid's Sandbox environment (username: user_good,
 # password: pass_good)
 # Use `development` to test with live users and credentials and `production`
 # to go live
 PLAID_ENV = os.getenv('PLAID_ENV', 'sandbox')
+
 # PLAID_PRODUCTS is a comma-separated list of products to use when initializing
 # Link. Note that this list must contain 'assets' in order for the app to be
 # able to create and retrieve asset reports.
@@ -212,6 +216,44 @@ def create_pot():
     except plaid.ApiException as e:
         error_response = format_error(e)
         return jsonify(error_response)
+@app.route('/api/create_link_token', methods=['POST'])
+@cross_origin()
+def create_link_token():
+    try:
+        request = LinkTokenCreateRequest(
+            products=products,
+            client_name="Plaid Quickstart",
+            country_codes=list(map(lambda x: CountryCode(x), PLAID_COUNTRY_CODES)),
+            language='en',
+            user=LinkTokenCreateRequestUser(
+                client_user_id=str(time.time())
+            )
+        )
+        if PLAID_REDIRECT_URI!=None:
+            request['redirect_uri']=PLAID_REDIRECT_URI
+    # create link token
+        response = client.link_token_create(request)
+        print(response.to_dict())
+        return jsonify(response.to_dict())
+    except plaid.ApiException as e:
+        print(e.body)
+        return json.loads(e.body)
+@app.route('/api/set_access_token', methods=['POST'])
+def get_access_token():
+    global access_token
+    global item_id
+    global transfer_id
+    req_json = request.get_json()
+    public_token = req_json['public_token']
+    try:
+        exchange_request = ItemPublicTokenExchangeRequest(
+            public_token=public_token)
+        exchange_response = client.item_public_token_exchange(exchange_request)
+        access_token = exchange_response['access_token']
+        item_id = exchange_response['item_id']
+        return jsonify(exchange_response.to_dict())
+    except plaid.ApiException as e:
+        return json.loads(e.body)
 @app.route('/api/delete_pot', methods=['GET'])
 def delete_pot():
     try:
