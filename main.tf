@@ -22,12 +22,12 @@ resource "google_project_service" "run_api" {
 
 resource "google_cloud_run_service" "run_service" {
   name = "amarifinancepots"
-  location = "us-central1"
+  location = "europe-west2"
 
   template {
     spec {
       containers {
-        image = "palondomus/amarifinancepots:5"
+        image = "palondomus/amarifinancepots:6"
       }
     }
   }
